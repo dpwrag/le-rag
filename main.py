@@ -9,13 +9,17 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.document_loaders import TextLoader
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from qdrant_client.models import Distance, VectorParams
+from langchain_qdrant import QdrantVectorStore
+from qdrant_client import QdrantClient
+
 
 if "GOOGLE_API_KEY" not in os.environ:
     os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter your Google AI API key: ")
 
 
 model = ChatGoogleGenerativeAI(
-    model="gemma-3-27b-it",
+    model="gemma-4-31b-it",
     temperature=1.0,
     max_tokens=None,
     timeout=None,
@@ -23,8 +27,23 @@ model = ChatGoogleGenerativeAI(
 )
 
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-# TODO: Change to actual vector store later
-vector_store = InMemoryVectorStore(embeddings)
+
+client = QdrantClient(
+    url=os.environ["QDRANT_URL"] if "QDRANT_URL" in os.environ else ":memory:"
+)
+
+vector_size = len(embeddings.embed_query("sample text"))
+
+if not client.collection_exists("test"):
+    client.create_collection(
+        collection_name="test",
+        vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
+    )
+vector_store = QdrantVectorStore(
+    client=client,
+    collection_name="test",
+    embedding=embeddings,
+)
 
 loader = TextLoader("bee.txt")
 docs = loader.load()
