@@ -4,6 +4,13 @@ The RAG component of the project.
 
 ## Installation
 
+Requirements:
+
+- [uv](https://docs.astral.sh/uv/) package manager
+- Podman or Docker
+
+Installation steps:
+
 1. [Set up the API Key](https://ai.google.dev/gemini-api/docs/api-key).
 1. Follow [Download and Run](https://qdrant.tech/documentation/quickstart/#download-and-run) step of Qdrant local quickstart guide to get Qdrant up and running.
 1. `cp .env.example .env`.
@@ -17,3 +24,6 @@ The RAG component of the project.
     ```bash
     uv run --env-file .env main.py
     ```
+
+## Related Docs
+- [Qdrant docs](https://python-client.qdrant.tech/qdrant_client.qdrant_client)

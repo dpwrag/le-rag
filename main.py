@@ -2,7 +2,6 @@ import getpass
 import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import ChatPromptTemplate
