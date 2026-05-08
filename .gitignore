@@ -218,3 +218,9 @@ __marimo__/
 # qdrant
 qdrant_storage/
 start_qdrant.sh
+
+# Ignore everything inside data/
+data/*
+
+# But keep this file
+!data/scrape_data.py

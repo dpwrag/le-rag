@@ -1,18 +1,28 @@
-from abc import abstractmethod, ABC
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_agent
+from collections.abc import Callable
+from abc import ABC, abstractmethod
 
 
 class AbstractAgent(ABC):
-    """
-    Abstract class of each RAG Agent
-    TODO: Finish this after researching LangGraph and stuffs
-    """
-
-    def __init__(self, model: ChatGoogleGenerativeAI):
-        self.__model = model
-        self.__prompt_text: str
+    def __init__(self, model, **kwargs):
+        self.__prompt = self._init_prompt()
+        self.__tools = self._init_tools(**kwargs)
+        self.__agent = create_agent(
+            model=model,
+            tools=self.__tools,
+            system_prompt=self.__prompt,
+        )
 
     @abstractmethod
-    def answer(query: str):
-        pass
+    def _init_tools(self, **kwargs) -> list[Callable]:
+        """Initialise tools for the agent (if any)"""
+        return []
+
+    @abstractmethod
+    def _init_prompt(self) -> str:
+        """Initialise the prompt"""
+        return ""
+
+    @property
+    def agent(self):
+        return self.__agent
