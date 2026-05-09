@@ -2,9 +2,9 @@ import getpass
 import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_huggingface import HuggingFaceEmbeddings
-
-from infrastructure import get_qdrant_client, QdrantVectorRepository
+from langchain_community.embeddings import FastEmbedEmbeddings
+from infrastructure import get_qdrant_client
+from langchain_qdrant import QdrantVectorStore
 from agents import RetrieveContextAgent
 
 EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
@@ -22,18 +22,21 @@ model = ChatGoogleGenerativeAI(
     max_retries=2,
 )
 
-encoder = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+client = get_qdrant_client()
+encoder = FastEmbedEmbeddings()
+collection_name = "menu"
 
-repo = QdrantVectorRepository(
-    client=get_qdrant_client(),
-    encoder=encoder,
+vector_store = QdrantVectorStore(
+    client=client, collection_name=collection_name, embedding=encoder
 )
+results = vector_store.similarity_search("lava chicken", k=2)
+for res in results:
+    print(f"* {res.page_content} [{res.metadata}]")
 
-menu_vector_store = repo.menu_vector_store
+agent = RetrieveContextAgent.build(model, vector_store=vector_store)
 
+query = "I'm a muslim and I want healthy diet. What menu should I eat?"
 
-agent = RetrieveContextAgent.build(model, vector_store=menu_vector_store)
-query = "I want to eat something healthy and I'm a muslim so pork is out of a question. What should I eat?"
 
 for event in agent.stream(
     {"messages": [{"role": "user", "content": query}]},

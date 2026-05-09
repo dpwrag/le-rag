@@ -1,5 +1,4 @@
-from .get_qdrant_cilent import get_qdrant_client
+from .qdrant import get_qdrant_client, init_collection
 
-from .qdrant_vector_repository import QdrantVectorRepository
 
-__all__ = [get_qdrant_client, QdrantVectorRepository]
+__all__ = [get_qdrant_client, init_collection]
