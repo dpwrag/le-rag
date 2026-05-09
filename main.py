@@ -29,9 +29,6 @@ collection_name = "menu"
 vector_store = QdrantVectorStore(
     client=client, collection_name=collection_name, embedding=encoder
 )
-results = vector_store.similarity_search("lava chicken", k=2)
-for res in results:
-    print(f"* {res.page_content} [{res.metadata}]")
 
 agent = RetrieveContextAgent.build(model, vector_store=vector_store)
 
