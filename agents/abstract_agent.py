@@ -15,7 +15,7 @@ class AbstractAgent(ABC):
 
     @classmethod
     @abstractmethod
-    def _prompt(self) -> str:
+    def _prompt(cls) -> str:
         """Returns the prompt of the agent"""
         return ""
 
@@ -25,4 +25,5 @@ class AbstractAgent(ABC):
             model=model,
             tools=cls._tools(**kwargs),
             system_prompt=cls._prompt(),
+            name=cls.__name__,
         )
