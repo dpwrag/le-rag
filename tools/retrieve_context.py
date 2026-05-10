@@ -1,5 +1,4 @@
 from langchain.tools import tool
-
 # By default, the function’s docstring becomes the tool’s description that helps the model understand when to use it:
 
 
@@ -12,7 +11,7 @@ def create_retrieve_context(vector_store):
 
     @tool(response_format="content_and_artifact")
     def retrieve_context(query: str):
-        """Retrieve information to help answer a query."""
+        """Retrieve food menu name, and, if available, its description"""
         retrieved_docs = vector_store.similarity_search(query, k=2)
         serialized = "\n\n".join(
             (f"Source: {doc.metadata}\nContent: {doc.page_content}")
