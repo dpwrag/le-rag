@@ -1,10 +1,9 @@
 from .abstract_agent import AbstractAgent
 from .retrieve_context_agent import RetrieveContextAgent
-from .french_translation_agent import FrenchTranslationAgent
-
+from .nli_agent import NLIAgent
 
 __all__ = [
     AbstractAgent,
     RetrieveContextAgent,
-    FrenchTranslationAgent,
+    NLIAgent,
 ]
