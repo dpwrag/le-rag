@@ -37,8 +37,8 @@ class NLIAgent(AbstractAgent):
         chain = self.prompt | self._llm
         msg = chain.invoke(
             {
-                "query": state["query"],
-                "retrieved_menu_list": state["retrieved_menu_list"],
+                "query": state.messages,
+                "retrieved_menu_list": state.retrieved_menu_list,
             }
         )
         return {"response": msg}

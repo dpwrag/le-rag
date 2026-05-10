@@ -29,12 +29,6 @@ vector_store = QdrantVectorStore(
 query = "I'm a muslim and I want healthy diet. What menu should I eat?"
 retrieve_context_agent = RetrieveContextAgent(model, vector_store=vector_store)
 nli_agent = NLIAgent(model)
-# for step in retrieve_context_agent.stream(
-#     {"messages": [{"role": "user", "content": query}]},
-#     stream_mode="debug",
-#     # config={"recursion_limit": 5},
-# ):
-# print(step)
 
 graph = (
     StateGraph(AgentState)
@@ -47,40 +41,10 @@ graph = (
 )
 for event in graph.stream(
     {"messages": [HumanMessage(content=query)]},
-    stream_mode="updates",  # emits {node_name: state_delta} instead
+    stream_mode="debug",  # emits {node_name: state_delta} instead
     config={"configurable": {"thread_id": "session-1"}},
 ):
-    node_name, state = next(iter(event.items()))
-    print(f"\n--- [{node_name}] ---")
-    state["messages"][-1].pretty_print()
-
-# graph = (
-#     StateGraph(MessagesState)
-#     .add_node(
-#         "retrieve_context",
-#         retrieve_context_node,
-#         retry_policy=RetryPolicy(max_attempts=3, initial_interval=3.0),
-#     )
-#     .add_node(
-#         "french_translation",
-#         french_translation_node,
-#         retry_policy=RetryPolicy(max_attempts=3, initial_interval=3.0),
-#     )
-#     .add_edge(START, "retrieve_context")
-#     .add_edge("retrieve_context", "french_translation")
-#     .add_edge("french_translation", END)
-#     .compile(checkpointer=InMemorySaver())  # enables multi-turn memory
-# )
-
-# # Option B — print each node's final message with a label
-# for event in graph.stream(
-#     {"messages": [{"role": "user", "content": query}]},
-#     stream_mode="updates",  # emits {node_name: state_delta} instead
-#     config={"configurable": {"thread_id": "session-1"}},
-# ):
-#     node_name, state = next(iter(event.items()))
-#     print(f"\n--- [{node_name}] ---")
-#     state["messages"][-1].pretty_print()
+    print(event)
 
 # final_state = graph.invoke(
 #     {"messages": [{"role": "user", "content": query}]},

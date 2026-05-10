@@ -6,6 +6,8 @@ candidate items from a set of all possible items based on the user's
 context using cosine similarity.
 """
 
+import logging
+
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ToolStrategy
 
@@ -13,16 +15,20 @@ from tools import create_retrieve_context
 
 from .abstract_agent import AbstractAgent
 from .states import RetrievedMenuList
+from langchain_core.language_models import BaseChatModel
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename="example.log", encoding="utf-8", level=logging.DEBUG)
 
 
 class RetrieveContextAgent(AbstractAgent):
-    def __init__(self, model, **kwargs):
+    def __init__(self, model: BaseChatModel, **kwargs):
         self._agent = create_agent(
             model=model,
             tools=self._tools(**kwargs),
             system_prompt=self.prompt,
             name=self.__class__.__name__,
-            response_format=ToolStrategy(RetrievedMenuList),
+            response_format=RetrievedMenuList,
         )
 
     @property
@@ -42,7 +48,8 @@ class RetrieveContextAgent(AbstractAgent):
         agent_input = {"messages": state.messages}
 
         items = self._agent.invoke(agent_input)
-        return {"retrieved_menu_list": items}
+        logger.debug(items["structured_response"])
+        return {"retrieved_menu_list": items["structured_response"]}
 
     @property
     def agent(self):
