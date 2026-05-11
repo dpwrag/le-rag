@@ -5,28 +5,26 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 from langchain_core.messages import BaseMessage
+from langchain_core.documents import Document
 
 
-class RetrievedMenu(BaseModel):
+class SelectedMenu(BaseModel):
     name: str = Field(description="The name of the menu")
     description: str = Field(description="The description of the menu")
+    score: float = Field(description="The score you gave to this particular menu")
     justification: str = Field(description="Justification of why you picked this menu.")
 
 
-class RetrievedMenuList(BaseModel):
-    menu_list: list[RetrievedMenu] = Field(description="A list of retrieved menus")
+class SelectedMenuList(BaseModel):
+    menu_list: list[SelectedMenu] = Field(description="A list of retrieved menus")
 
 
 class AgentState(BaseModel):
-    # Use Annotated and operator.add so messages append instead of overwrite!
-    messages: Annotated[list[BaseMessage], operator.add] = Field(
-        default_factory=list, description="Message from Human"
+    messages: Annotated[list[BaseMessage], operator.add] = Field(default_factory=list)
+    menu_list: list[Document] = Field(
+        default_factory=list, description="Raw retrieved documents from vector store"
     )
-
-    retrieved_menu_list: RetrievedMenuList | None = Field(
-        default=None, description="The retrieved menus"
+    selected_menu_list: SelectedMenuList | None = Field(
+        default=None, description="Filtered and scored menus from NLI agent"
     )
-
-    response: str | None = Field(
-        default=None, description="The natural language response of the model"
-    )
+    response: str | None = Field(default=None)

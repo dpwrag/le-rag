@@ -21,18 +21,6 @@ class AbstractAgent(ABC):
         """
         raise NotImplementedError()
 
-    def _tools(self, **kwargs) -> list[Callable]:
-        """Initialise tools for the agent (if any)
-
-        :return: list of tools
-        """
-        raise NotImplementedError()
-
-    @property
-    def agent(self):
-        """Returns the inner agent (if any)"""
-        raise NotImplementedError()
-
     @abstractmethod
     def act(self, state: AgentState, **kwargs):
         """The action of the agent"""

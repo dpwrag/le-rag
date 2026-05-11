@@ -1,14 +1,19 @@
+import logging
+
 from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain_core.messages import HumanMessage
+from langchain_ollama import ChatOllama
 from langchain_qdrant import QdrantVectorStore
-from agents import RetrieveContextAgent, NLIAgent
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph import END, START, StateGraph
+
+from agents import NLIAgent, RetrieveContextAgent
 from agents.states import AgentState
 from infrastructure import get_qdrant_client
-from langchain_ollama import ChatOllama
-from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import InMemorySaver
-from langchain_core.messages import HumanMessage
 
-LLM_MODEL = "hf.co/unsloth/Qwen3-4B-GGUF:Q4_K_M"
+logging.basicConfig(filename="example.log", encoding="utf-8", level=logging.DEBUG)
+
+LLM_MODEL = "hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M "
 model = ChatOllama(
     model=LLM_MODEL,
     temperature=1.0,

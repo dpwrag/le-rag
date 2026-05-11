@@ -10,35 +10,46 @@ score above the predefined threshold.
 
 from langchain_core.prompts import PromptTemplate
 from .abstract_agent import AbstractAgent
+import logging
+from .states import SelectedMenuList
+
+logger = logging.getLogger(__name__)
 
 
 class NLIAgent(AbstractAgent):
     def __init__(self, model, **kwargs):
-        self._llm = model
+        self._llm = model.with_structured_output(SelectedMenuList)
+        self.__threshold = 25
+        self.__min_score = 0
+        self.__max_score = 100
 
     @property
     def prompt(self):
         return PromptTemplate.from_template(
-            "You are a friendly restaurant assistant helping a customer choose what to eat.\n\n"
-            "Based on the customer's request and the retrieved menu items below, "
-            "present the recommendations in a warm, conversational tone.\n\n"
-            "For each recommended item, briefly mention:\n"
-            "- The dish name and a one-line description\n"
-            "- Why it matches what the customer is looking for"
-            "(i.e., the justification why it's chosen)"
-            "- Price (if available)\n\n"
-            "Keep the response concise (5 items max) and end with a light suggestion "
-            "or question to help the customer decide.\n\n"
-            "Customer request: {query}\n\n"
-            "Retrieved menu items:\n{retrieved_menu_list}"
+            "You are a helpful assistant who is an expert in food and culinary recommendations.\n\n"
+            "Your job is to evaluate menu items retrieved by by your assistant freind"
+            "Your job is to rate those menu from the scores of {min_score} to {max_score}. "
+            "Use your artificial brain to rate it."
+            "Select only items that has scored greater or equal to {threshold}"
+            "Provide score,"
+            "Also provide justification of why you selected it.\n\n"
+            "User's context: {context}"
+            "Retrieved menu items: {menu_list}"
         )
 
     def act(self, state, **kwargs):
         chain = self.prompt | self._llm
-        msg = chain.invoke(
+
+        result: SelectedMenuList = chain.invoke(
             {
-                "query": state.messages,
-                "retrieved_menu_list": state.retrieved_menu_list,
+                "min_score": self.__min_score,
+                "max_score": self.__max_score,
+                "threshold": self.__threshold,
+                "context": state.messages,  # latest user message
+                "menu_list": state.menu_list,
             }
         )
-        return {"response": msg}
+
+        logger.info(result)
+
+        return {"selected_menu_list": result}
