@@ -204,9 +204,7 @@ print("\nSaved raw evaluation data to ragas_raw_results.csv")
 print("\nRunning Ragas evaluation...\n")
 ollama_client = AsyncClient()
 
-evaluator_llm = LangchainLLMWrapper(
-    ChatOllama(model="hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M", temperature=0)
-)
+evaluator_llm = LangchainLLMWrapper(model)
 evaluator_embeddings = LangchainEmbeddingsWrapper(FastEmbedEmbeddings())
 
 # Correct initialization
