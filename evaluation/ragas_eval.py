@@ -1,37 +1,44 @@
 import getpass
 import os
+
 import pandas as pd
-
 from datasets import Dataset
-
+from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain_core.messages import HumanMessage
+from langchain_ollama import ChatOllama
+from langchain_qdrant import QdrantVectorStore
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph import END, START, StateGraph
+from ollama import AsyncClient
 from ragas import evaluate
-from ragas.metrics.collections import (
-    faithfulness,
-    answer_relevancy,
-    context_precision,
-    context_recall,
+from ragas.embeddings import LangchainEmbeddingsWrapper
+from ragas.embeddings.base import embedding_factory
+from ragas.llms import LangchainLLMWrapper
+from ragas.llms.base import llm_factory
+from ragas.metrics import (
+    AnswerRelevancy,
+    ContextPrecision,
+    ContextRecall,
+    Faithfulness,
 )
 
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_community.embeddings import FastEmbedEmbeddings
-from langchain_qdrant import QdrantVectorStore
-
+from agents import NLIAgent, RetrieveContextAgent
+from agents.states import AgentState, SelectedMenu
 from infrastructure import get_qdrant_client
-from agents import RetrieveContextAgent
 
 COLLECTION_NAME = "menu"
 TOP_K = 4
 
-if "GOOGLE_API_KEY" not in os.environ:
-    os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter your Google AI API key: ")
-
-model = ChatGoogleGenerativeAI(
-    model="gemma-4-31b-it",
-    temperature=0.3,
+LLM_MODEL = "hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M "
+model = ChatOllama(
+    model=LLM_MODEL,
+    temperature=1.0,
     max_tokens=None,
-    timeout=None,
+    timeout=69_420,
+    num_predict=512,
     max_retries=2,
 )
+
 
 client = get_qdrant_client()
 
@@ -45,10 +52,6 @@ vector_store = QdrantVectorStore(
 
 retriever = vector_store.as_retriever(search_kwargs={"k": TOP_K})
 
-agent = RetrieveContextAgent.build(
-    model=model,
-    vector_store=vector_store,
-)
 
 EVAL_DATA = [
     {
@@ -59,55 +62,55 @@ EVAL_DATA = [
             "that do not contain pork or bacon."
         ),
     },
-    {
-        "question": "What spicy chicken dishes are available?",
-        "ground_truth": (
-            "Available spicy chicken dishes include spicy wings, hot chicken, "
-            "buffalo chicken, and spicy grilled chicken meals."
-        ),
-    },
-    {
-        "question": "Which restaurants have seafood menu items?",
-        "ground_truth": (
-            "Restaurants with seafood menu items include places serving shrimp, "
-            "fish, salmon, crab, or other seafood dishes."
-        ),
-    },
-    {
-        "question": "What low calorie meals can I order?",
-        "ground_truth": (
-            "Low calorie meals include salads, grilled proteins, vegetable bowls, "
-            "and light seafood dishes."
-        ),
-    },
-    {
-        "question": "Which restaurant has steak dishes?",
-        "ground_truth": (
-            "Restaurants with steak dishes include steakhouse or grill restaurants "
-            "serving filet mignon, ribeye, sirloin, or hibachi steak."
-        ),
-    },
-    {
-        "question": "Can you recommend high protein meals?",
-        "ground_truth": (
-            "High protein meals include grilled chicken, steak, seafood, "
-            "egg-based dishes, and protein bowls."
-        ),
-    },
-    {
-        "question": "What vegetarian food is available?",
-        "ground_truth": (
-            "Vegetarian foods include salads, vegetable bowls, meat-free pasta, "
-            "and plant-based dishes without meat."
-        ),
-    },
-    {
-        "question": "Which restaurants serve wings?",
-        "ground_truth": (
-            "Wing restaurants and sports bars serve chicken wings including "
-            "buffalo wings and boneless wings."
-        ),
-    },
+    # {
+    #     "question": "What spicy chicken dishes are available?",
+    #     "ground_truth": (
+    #         "Available spicy chicken dishes include spicy wings, hot chicken, "
+    #         "buffalo chicken, and spicy grilled chicken meals."
+    #     ),
+    # },
+    # {
+    #     "question": "Which restaurants have seafood menu items?",
+    #     "ground_truth": (
+    #         "Restaurants with seafood menu items include places serving shrimp, "
+    #         "fish, salmon, crab, or other seafood dishes."
+    #     ),
+    # },
+    # {
+    #     "question": "What low calorie meals can I order?",
+    #     "ground_truth": (
+    #         "Low calorie meals include salads, grilled proteins, vegetable bowls, "
+    #         "and light seafood dishes."
+    #     ),
+    # },
+    # {
+    #     "question": "Which restaurant has steak dishes?",
+    #     "ground_truth": (
+    #         "Restaurants with steak dishes include steakhouse or grill restaurants "
+    #         "serving filet mignon, ribeye, sirloin, or hibachi steak."
+    #     ),
+    # },
+    # {
+    #     "question": "Can you recommend high protein meals?",
+    #     "ground_truth": (
+    #         "High protein meals include grilled chicken, steak, seafood, "
+    #         "egg-based dishes, and protein bowls."
+    #     ),
+    # },
+    # {
+    #     "question": "What vegetarian food is available?",
+    #     "ground_truth": (
+    #         "Vegetarian foods include salads, vegetable bowls, meat-free pasta, "
+    #         "and plant-based dishes without meat."
+    #     ),
+    # },
+    # {
+    #     "question": "Which restaurants serve wings?",
+    #     "ground_truth": (
+    #         "Wing restaurants and sports bars serve chicken wings including "
+    #         "buffalo wings and boneless wings."
+    #     ),
+    # },
 ]
 
 questions = []
@@ -135,22 +138,30 @@ for sample in EVAL_DATA:
         print(text[:500])
 
     try:
-        response = agent.invoke(
-            {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": question,
-                    }
-                ]
-            }
-        )
+        retrieve_context_agent = RetrieveContextAgent(model, vector_store=vector_store)
+        nli_agent = NLIAgent(model)
 
-        answer = response["messages"][-1].content
+        graph = (
+            StateGraph(AgentState)
+            .add_node("retrieve_context", retrieve_context_agent.act)
+            .add_node("nli_agent", nli_agent.act)
+            .add_edge(START, "retrieve_context")
+            .add_edge("retrieve_context", "nli_agent")
+            .add_edge("nli_agent", END)
+            .compile(checkpointer=InMemorySaver())
+        )
+        final_state = graph.invoke(
+            {"messages": [HumanMessage(content=question)]},
+            config={"configurable": {"thread_id": "session-1"}},
+        )
+        answer = ""
+        for menu in final_state["selected_menu_list"].menu_list:
+            a = f"{menu.name}: {menu.justification} & "
+            answer += a
 
     except Exception as e:
         print(f"Error: {e}")
-
+        print(e)
         answer = "Generation failed."
 
     print("\n--- Generated Answer ---")
@@ -191,16 +202,28 @@ results_df.to_csv(
 print("\nSaved raw evaluation data to ragas_raw_results.csv")
 
 print("\nRunning Ragas evaluation...\n")
+ollama_client = AsyncClient()
 
-result = evaluate(
-    dataset=dataset,
-    metrics=[
-        faithfulness,
-        answer_relevancy,
-        context_precision,
-        context_recall,
-    ],
+evaluator_llm = LangchainLLMWrapper(
+    ChatOllama(model="hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M", temperature=0)
 )
+evaluator_embeddings = LangchainEmbeddingsWrapper(FastEmbedEmbeddings())
+
+# Correct initialization
+faithfulness_metric = Faithfulness(llm=evaluator_llm)
+answer_relevancy_metric = AnswerRelevancy(
+    llm=evaluator_llm, embeddings=evaluator_embeddings
+)
+context_precision_metric = ContextPrecision(llm=evaluator_llm)
+context_recall_metric = ContextRecall(llm=evaluator_llm)
+metrics_list = [
+    faithfulness_metric,
+    answer_relevancy_metric,
+    context_precision_metric,
+    context_recall_metric,
+]
+
+result = evaluate(dataset=dataset, metrics=metrics_list)
 
 print("Ragas Scores")
 

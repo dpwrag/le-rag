@@ -64,3 +64,7 @@ class RetrieveContextAgent(AbstractAgent):
 
         # Fallback if no tool was called
         return {"menu_list": []}
+
+    @property
+    def agent(self):
+        return self._llm
