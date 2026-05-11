@@ -223,3 +223,4 @@ qdrant_storage/
 start_qdrant.sh
 
 data/restaurantmenuchanges.csv
+ragas*.csv
