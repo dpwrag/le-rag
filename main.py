@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
+from langsmith import traceable
 
 from setup import create_graph
 from api.schemas import QueryRequest, QueryResponse, SelectedMenu
@@ -54,6 +55,7 @@ async def health_check():
     }
 
 
+@traceable(name="query")
 @app.post("/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     """
