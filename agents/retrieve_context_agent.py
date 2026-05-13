@@ -7,15 +7,13 @@ context using cosine similarity.
 """
 
 import logging
-from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
+
+from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import PromptTemplate
 
 from tools import create_retrieve_context
 
 from .abstract_agent import AbstractAgent
-from .states import SelectedMenuList
-from langchain_core.language_models import BaseChatModel
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +23,6 @@ class RetrieveContextAgent(AbstractAgent):
         # Save the list of tools to self so we can access the actual function in act()
         self.tools = self.__init_tools(**kwargs)
 
-        # Bind the tools to the LLM (You nailed this part!)
         self._llm = model.bind_tools(self.tools)
 
     @property
@@ -45,26 +42,20 @@ class RetrieveContextAgent(AbstractAgent):
     def act(self, state, **kwargs):
         chain = self.prompt | self._llm
         msg = chain.invoke({"messages": state.messages})
+        logger.info(msg.content)
 
-        # 1. Check if the model made a tool call
         if msg.tool_calls:
             retrieve_tool = self.tools[0]
 
             tool_message = retrieve_tool.invoke(msg.tool_calls[0])
 
-            retrieved_docs = tool_message.artifact
-            # serialized_content = tool_message.content
-            # logger.debug(type(serialized_content))
-            # logger.debug(serialized_content)
-            logger.info(type(retrieved_docs))
-            # logger.debug(retrieved_docs)
-
-            # 4. Return the raw string directly to overwrite 'retrieved_menu_list' in state!
-            return {"menu_list": retrieved_docs}
+            return {
+                "menu_list": tool_message.artifact,
+                "chain_of_thought": [msg.content],
+            }
 
         # Fallback if no tool was called
-        return {"menu_list": []}
-
-    @property
-    def agent(self):
-        return self._llm
+        return {
+            "menu_list": [],
+            "chain_of_thought": [msg.content],
+        }
