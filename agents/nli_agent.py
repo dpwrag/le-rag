@@ -11,7 +11,7 @@ score above the predefined threshold.
 from langchain_core.prompts import PromptTemplate
 from .abstract_agent import AbstractAgent
 import logging
-from .states import SelectedMenuList
+from common.schemas import SelectedMenuList
 
 logger = logging.getLogger(__name__)
 

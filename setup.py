@@ -13,7 +13,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from agents import NLIAgent, RetrieveContextAgent
-from agents.states import AgentState
+from common.schemas import AgentState
 from infrastructure import get_qdrant_client
 
 logger = logging.getLogger(__name__)

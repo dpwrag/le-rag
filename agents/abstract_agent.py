@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from langchain_core.language_models import BaseChatModel
-from .states import AgentState
+from common.schemas import AgentState
 
 from langchain_core.prompts import PromptTemplate
 
