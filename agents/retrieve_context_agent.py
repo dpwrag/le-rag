@@ -51,11 +51,11 @@ class RetrieveContextAgent(AbstractAgent):
 
             return {
                 "menu_list": tool_message.artifact,
-                "chain_of_thought": [msg.content],
+                "chain_of_thought": [str(msg.content)],
             }
 
         # Fallback if no tool was called
         return {
             "menu_list": [],
-            "chain_of_thought": [msg.content],
+            "chain_of_thought": [str(msg.content)],
         }
