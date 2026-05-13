@@ -32,7 +32,10 @@ def dataframe_to_documents(
 def menu_metadata(row: dict) -> dict:
     return {
         "menu_item": row["menuItemName"],
+        "menu_item_description": row["menuItemDescription"],
+        "menu_item_category": row["menuItemCategory"],
         "restaurant": row["restaurantName"],
+        "restaurant_description": row["restaurantDescription"],
         "city": row["market"],
         "price": row["price"],
         "lat": row["restaurantLatitude"],
