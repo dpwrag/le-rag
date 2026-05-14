@@ -6,19 +6,17 @@ This module handles the creation of the model, vector store, and agent graph.
 import logging
 
 from langchain_community.embeddings import FastEmbedEmbeddings
-from langchain_ollama import ChatOllama
 from langchain_qdrant import QdrantVectorStore
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from agents import NLIAgent, RetrieveContextAgent
-from agents.states import AgentState
+from common.schemas import AgentState
 from infrastructure import get_qdrant_client
+from .model import create_model
 
 logger = logging.getLogger(__name__)
-
-LLM_MODEL = "hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M"
 
 
 def create_graph() -> CompiledStateGraph:
@@ -28,16 +26,10 @@ def create_graph() -> CompiledStateGraph:
     Returns:
         A CompiledStateGraph
     """
+    model, model_name = create_model()
     logger.info("Initializing LE-RAG components...")
 
-    model = ChatOllama(
-        model=LLM_MODEL,
-        temperature=1.0,
-        max_tokens=None,
-        timeout=None,
-        max_retries=2,
-    )
-    logger.info(f"Initialized model: {LLM_MODEL}")
+    logger.info(f"Initialized model: {model_name}")
 
     client = get_qdrant_client()
     encoder = FastEmbedEmbeddings()

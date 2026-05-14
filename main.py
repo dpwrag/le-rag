@@ -5,10 +5,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
 
-from setup import create_graph
-from api.schemas import QueryRequest, QueryResponse, SelectedMenu
+from infrastructure import create_graph
+from common.schemas import QueryRequest, QueryResponse, SelectedMenu
 
-logging.basicConfig(filename="example.log", encoding="utf-8", level=logging.DEBUG)
+logging.basicConfig(filename="example.log", encoding="utf-8", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Global variable for graph
