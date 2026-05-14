@@ -12,7 +12,7 @@ from langchain_core.prompts import PromptTemplate
 from langsmith import traceable
 from .abstract_agent import AbstractAgent
 import logging
-from .states import SelectedMenuList
+from common.schemas import SelectedMenuList
 
 logger = logging.getLogger(__name__)
 
