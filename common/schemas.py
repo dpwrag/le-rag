@@ -35,6 +35,7 @@ class QueryResponse(BaseModel):
 
     query: str
     messages: List[dict]
+    chain_of_thought: List[str]
     selected_menu: List[SelectedMenu] = []
     thread_id: str = "session-1"
 

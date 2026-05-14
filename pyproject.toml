@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
     "beautifulsoup4>=4.14.3",
+    "deepeval>=4.0.2",
     "fastapi[standard]>=0.136.1",
     "fastembed>=0.8.0",
     "google-genai>=1.73.1",
@@ -18,6 +19,7 @@ dependencies = [
     "langchain-qdrant>=1.1.0",
     "langchain-text-splitters>=1.1.2",
     "langgraph>=1.1.10",
+    "langsmith>=0.8.3",
     "ragas>=0.4.3",
 ]
 

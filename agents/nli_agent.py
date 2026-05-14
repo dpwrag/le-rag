@@ -9,6 +9,7 @@ score above the predefined threshold.
 """
 
 from langchain_core.prompts import PromptTemplate
+from langsmith import traceable
 from .abstract_agent import AbstractAgent
 import logging
 from common.schemas import SelectedMenuList
@@ -37,6 +38,7 @@ class NLIAgent(AbstractAgent):
             "Retrieved menu items: {menu_list}"
         )
 
+    @traceable(name="nli_ranker")
     def act(self, state, **kwargs):
         chain = self.prompt | self._llm
 

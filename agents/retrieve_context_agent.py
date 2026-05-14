@@ -10,6 +10,7 @@ import logging
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import PromptTemplate
+from langsmith import traceable
 
 from tools import create_retrieve_context
 
@@ -39,6 +40,7 @@ class RetrieveContextAgent(AbstractAgent):
     def __init_tools(self, *, vector_store, **kwargs):
         return [create_retrieve_context(vector_store)]
 
+    @traceable(name="retrieve_context")
     def act(self, state, **kwargs):
         chain = self.prompt | self._llm
         msg = chain.invoke({"messages": state.messages})

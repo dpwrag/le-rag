@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_core.messages import HumanMessage
+from langsmith import traceable
 
 from infrastructure import create_graph
 from common.schemas import QueryRequest, QueryResponse, SelectedMenu
@@ -54,6 +55,7 @@ async def health_check():
     }
 
 
+@traceable(name="query")
 @app.post("/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     """
@@ -118,6 +120,7 @@ async def process_query(request: QueryRequest):
             query=request.query,
             messages=serialized_messages,
             selected_menu=selected_menu,
+            chain_of_thought=final_state.get("chain_of_thought"),
             thread_id="session-1",
         )
 
