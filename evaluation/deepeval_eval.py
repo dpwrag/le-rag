@@ -11,7 +11,7 @@ from deepeval.test_case import LLMTestCase
 
 from langchain_core.messages import HumanMessage
 
-from setup import create_graph
+from infrastructure import create_graph
 
 
 def serialize_selected_menu(selected_menu_list) -> str:
@@ -46,23 +46,17 @@ def serialize_retrieved_docs(retrieved_docs) -> list[str]:
 
 def run_evaluation(user_query: str):
     graph = create_graph()
-    
+
     model = OllamaModel(
         model="hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M",
         base_url="http://localhost:11434",
-        temperature=0
+        temperature=0,
     )
 
     # Invoke graph
     result = graph.invoke(
-        {
-            "messages": [HumanMessage(content=user_query)]
-        },
-        config={
-            "configurable": {
-                "thread_id": "deepeval-run"
-            }
-        }
+        {"messages": [HumanMessage(content=user_query)]},
+        config={"configurable": {"thread_id": "deepeval-run"}},
     )
 
     retrieved_docs = result["menu_list"]
@@ -91,31 +85,11 @@ Recommend spicy Thai dishes with seafood and avoid dairy.
 
     # Metrics
     metrics = [
-        AnswerRelevancyMetric(
-            threshold=0.7,
-            include_reason=True,
-            model=model
-        ),
-        FaithfulnessMetric(
-            threshold=0.7,
-            include_reason=True,
-            model=model
-        ),
-        ContextualPrecisionMetric(
-            threshold=0.7,
-            include_reason=True,
-            model=model
-        ),
-        ContextualRecallMetric(
-            threshold=0.7,
-            include_reason=True,
-            model=model
-        ),
-        ContextualRelevancyMetric(
-            threshold=0.7,
-            include_reason=True,
-            model=model
-        ),
+        AnswerRelevancyMetric(threshold=0.7, include_reason=True, model=model),
+        FaithfulnessMetric(threshold=0.7, include_reason=True, model=model),
+        ContextualPrecisionMetric(threshold=0.7, include_reason=True, model=model),
+        ContextualRecallMetric(threshold=0.7, include_reason=True, model=model),
+        ContextualRelevancyMetric(threshold=0.7, include_reason=True, model=model),
     ]
 
     # Run evaluation
