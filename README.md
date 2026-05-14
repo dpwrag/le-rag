@@ -9,21 +9,37 @@ Requirements:
 - [uv](https://docs.astral.sh/uv/) package manager
 - Podman or Docker
 
-Installation steps:
+### Using Google AI Model
 
-1. [Set up the API Key](https://ai.google.dev/gemini-api/docs/api-key).
 1. Follow [Download and Run](https://qdrant.tech/documentation/quickstart/#download-and-run) step of Qdrant local quickstart guide to get Qdrant up and running.
+1. [Set up Google API Key](https://ai.google.dev/gemini-api/docs/api-key).
 1. `cp .env.example .env`.
-1. Replace `GOOGLE_API_KEY` with your actual API key.
-1. Replace `QDRANT_URL` with your actual Qdrant URL from step 2.
-1. Installl dependencies
+1. Replace `QDRANT_URL` with your actual Qdrant URL from step 1.
+1. Replace `GOOGLE_API_KEY` with your API key from step 2.
+1. Set `MODEL_STRATEGY` to google
+1. Install dependencies
     ```bash
-    uv sync
-    ```
-1. Run `main.py`
-    ```bash
-    uv run --env-file .env main.py
+    uv sync --dev
     ```
 
-## Related Docs
-- [Qdrant docs](https://python-client.qdrant.tech/qdrant_client.qdrant_client)
+### Using Local AI Model
+
+1. Follow [Download and Run](https://qdrant.tech/documentation/quickstart/#download-and-run) step of Qdrant local quickstart guide to get Qdrant up and running.
+1. [Install Ollama](https://ollama.com/)
+1. Pull the local AI model
+    ```bash
+    ollama pull hf.co/unsloth/Qwen3-1.7B-GGUF:Q4_K_M
+    ```
+1. `cp .env.example .env`.
+1. Replace `QDRANT_URL` with your actual Qdrant URL from step 1.
+1. Set `MODEL_STRATEGY` to local
+1. Install dependencies
+    ```bash
+    uv sync --dev
+    ```
+
+## How to Run?
+
+```bash
+uv run --env-file .env main.py
+```

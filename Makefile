@@ -9,6 +9,6 @@ ingest:
 list-models:
 	uv run --env-file .env list_models.py
 eval:
-	uv run --env-file .env python -m evaluation.ragas_eval
+	uv run --env-file .env python -m evaluation.deepeval_eval
 graph-only:
 	uv run --env-file .env graph_only.py

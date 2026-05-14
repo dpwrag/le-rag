@@ -72,7 +72,7 @@ def run_evaluation(user_query: str):
     # Ground truth ideal answer
     # You should build this from curated datasets later
     expected_output = """
-Recommend spicy Thai dishes with seafood and avoid dairy.
+Recommend healthy halal food.
 """
 
     # Build test case
@@ -102,7 +102,7 @@ Recommend spicy Thai dishes with seafood and avoid dairy.
 
 
 if __name__ == "__main__":
-    query = "I want spicy seafood noodles with no dairy"
+    query = "I'm a muslim and I want to eat healthy cuisine, what should I eat?"
 
     results = run_evaluation(query)
 
