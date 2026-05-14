@@ -2,7 +2,7 @@ import logging
 
 from langchain_core.messages import HumanMessage
 
-from setup import create_graph
+from infrastructure import create_graph
 
 
 logging.basicConfig(filename="example.log", encoding="utf-8", level=logging.INFO)
