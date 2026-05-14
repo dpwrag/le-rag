@@ -120,6 +120,7 @@ async def process_query(request: QueryRequest):
             query=request.query,
             messages=serialized_messages,
             selected_menu=selected_menu,
+            chain_of_thought=final_state.get("chain_of_thought"),
             thread_id="session-1",
         )
 
