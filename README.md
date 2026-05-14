@@ -9,6 +9,8 @@ Requirements:
 - [uv](https://docs.astral.sh/uv/) package manager
 - Podman or Docker
 
+0. Clone this repository and `cd` to the project's root directory. 
+
 ### Using Google AI Model
 
 1. Follow [Download and Run](https://qdrant.tech/documentation/quickstart/#download-and-run) step of Qdrant local quickstart guide to get Qdrant up and running.
@@ -42,4 +44,20 @@ Requirements:
 
 ```bash
 uv run --env-file .env main.py
+```
+
+Then, send a POST request to `http://localhost:8000/query` with the following JSON payload to get the prediction results.
+
+```json
+{
+  "query": "string"
+}
+```
+
+For more information, visit `http://localhost:8000/docs` (Swagger UI)
+
+### Running DeepEval Evaluation
+
+```bash
+uv run --env-file .env python -m evaluation.deepeval_eval
 ```
